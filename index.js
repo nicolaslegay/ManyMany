@@ -1,23 +1,43 @@
-const express = require("express");
-const app = express();
-const port = process.env.PORT || 3000;
+const http = require("http");
 
-app.use(express.json());
+const port = process.env.PORT || 8080;
 
-app.get("/health", (req, res) => {
-  res.json({ status: "healthy", service: "ManyMany CRM Agents" });
+const server = http.createServer(async (req, res) => {
+  
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
+  
+  if (req.method === "OPTIONS") {
+    res.writeHead(204);
+    res.end();
+    return;
+  }
+
+  if (req.url === "/health") {
+    res.writeHead(200, { "Content-Type": "application/json" });
+    res.end(JSON.stringify({ status: "healthy", service: "ManyMany CRM Agents" }));
+    return;
+  }
+
+  if (req.url === "/agents/scoring" && req.method === "POST") {
+    let body = "";
+    req.on("data", chunk => { body += chunk.toString(); });
+    req.on("end", () => {
+      const { deal } = JSON.parse(body || "{}");
+      res.writeHead(200, { "Content-Type": "application/json" });
+      res.end(JSON.stringify({
+        probability: 72,
+        reasoning: `Analyse du deal "${deal?.name || "inconnu"}" : montant ${deal?.value || "?"}€, stade ${deal?.stage || "?"}. Score basé sur le stade et la valeur. Prochaine action recommandée : relance sous 48h.`
+      }));
+    });
+    return;
+  }
+
+  res.writeHead(200, { "Content-Type": "application/json" });
+  res.end(JSON.stringify({ ok: true, service: "ManyMany CRM Agents" }));
 });
 
-app.post("/agents/scoring", (req, res) => {
-  const { deal } = req.body;
-  res.json({ received: true, deal_name: deal?.name, score: null, message: "Agent scoring — bientôt actif" });
-});
-
-app.post("/agents/suggest", (req, res) => {
-  const { deal } = req.body;
-  res.json({ received: true, deal_name: deal?.name, suggestions: [], message: "Agent suggestion — bientôt actif" });
-});
-
-app.listen(port, () => {
+server.listen(port, () => {
   console.log(`ManyMany backend running on port ${port}`);
 });
