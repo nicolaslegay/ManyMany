@@ -1,22 +1,23 @@
-const http = require("http");
-
+const express = require("express");
+const app = express();
 const port = process.env.PORT || 3000;
 
-const server = http.createServer((req, res) => {
-  if (req.url === "/health") {
-    res.writeHead(200, { "Content-Type": "application/json" });
-    res.end(JSON.stringify({ status: "healthy" }));
-    return;
-  }
+app.use(express.json());
 
-  res.writeHead(200, { "Content-Type": "application/json" });
-  res.end(JSON.stringify({
-    ok: true,
-    service: "crm-agents",
-    message: "Backend opérationnel"
-  }));
+app.get("/health", (req, res) => {
+  res.json({ status: "healthy", service: "ManyMany CRM Agents" });
 });
 
-server.listen(port, () => {
-  console.log(`Server running on port ${port}`);
+app.post("/agents/scoring", (req, res) => {
+  const { deal } = req.body;
+  res.json({ received: true, deal_name: deal?.name, score: null, message: "Agent scoring — bientôt actif" });
+});
+
+app.post("/agents/suggest", (req, res) => {
+  const { deal } = req.body;
+  res.json({ received: true, deal_name: deal?.name, suggestions: [], message: "Agent suggestion — bientôt actif" });
+});
+
+app.listen(port, () => {
+  console.log(`ManyMany backend running on port ${port}`);
 });
