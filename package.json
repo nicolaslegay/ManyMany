@@ -1,9 +1,5 @@
 {
-  "name": "crm-agents",
-  "version": "1.0.0",
-  "description": "Backend agentique minimal pour Lovable",
-  "main": "index.js",
-  "scripts": {
-    "start": "node index.js"
+  "dependencies": {
+    "express": "^5.2.1"
   }
 }
